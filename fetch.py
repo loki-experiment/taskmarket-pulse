@@ -51,9 +51,14 @@ def iso_week(ts):
     return "%04d-W%02d" % (y, w)
 
 
-def poster_stats(chain_id, budget):
-    """Distinct task posters per ISO week, from the public task list."""
-    seen, posters, sampled, cursor = set(), {}, 0, None
+def chain_tasks(chain_id, budget):
+    """Per-chain task stats from the public task list.
+
+    The aggregate stats endpoints (breakdowns, platform-time-series,
+    activity-heatmap) answer with the same platform-wide payload for either
+    chainId, so per-chain figures have to come from the task list itself.
+    """
+    seen, posters, per_week, sampled, cursor = set(), {}, {}, 0, None
     while sampled < budget:
         params = {"chainId": chain_id, "limit": 100, "sort": "newest"}
         if cursor:
@@ -72,13 +77,27 @@ def poster_stats(chain_id, budget):
             if not wk:
                 continue
             posters.setdefault(wk, set()).add((t.get("requester") or "").lower())
+            bucket = per_week.setdefault(wk, {"tasks": 0, "rewardRaw": 0})
+            bucket["tasks"] += 1
+            try:
+                bucket["rewardRaw"] += int(t.get("reward") or 0)
+            except (TypeError, ValueError):
+                pass
         cursor = page.get("nextCursor")
         if not page.get("hasMore") or not cursor:
             break
-    weeks = sorted(posters)[-10:]
+    weeks = sorted(per_week)[-10:]
     return {
         "sampledTasks": sampled,
-        "weeks": [{"week": w, "posters": len(posters[w])} for w in weeks],
+        "weeks": [
+            {
+                "week": w,
+                "posters": len(posters.get(w, ())),
+                "tasks": per_week[w]["tasks"],
+                "rewardRaw": str(per_week[w]["rewardRaw"]),
+            }
+            for w in weeks
+        ],
     }
 
 
@@ -133,7 +152,7 @@ def chain_block(chain_id):
     }
     feed = get("/api/stats/activity-feed", {"chainId": chain_id, "limit": 50})
     out["feed"] = feed.get("items") or []
-    out["posters"] = poster_stats(chain_id, 1500)
+    out["chainTasks"] = chain_tasks(chain_id, 1500)
     return out
 
 
@@ -154,7 +173,7 @@ def main():
             "GET /api/stats/activity-heatmap?chainId=…&range=30d&dimension=hourOfWeek",
             "GET /api/stats/activity-heatmap?chainId=…&range=7d&dimension=mode",
             "GET /api/stats/activity-feed?chainId=…&limit=60",
-            "GET /api/tasks?chainId=…&limit=100&sort=newest (paged, ≤500 per chain, for distinct posters per week)",
+            "GET /api/tasks?chainId=…&limit=100&sort=newest (paged, ≤1,500 per chain: per-chain open counts, tasks and posters per week)",
         ],
         "refresh_minutes": 60,
     }
@@ -169,7 +188,7 @@ def main():
     for cid in data["chains"]:
         b = data["chains"][cid]
         print("  chain %s: feed=%d series=%s posters_weeks=%d" % (
-            cid, len(b["feed"]), "/".join(str(len(b["series"][r])) for r in RANGES), len(b["posters"]["weeks"])))
+            cid, len(b["feed"]), "/".join(str(len(b["series"][r])) for r in RANGES), len(b["chainTasks"]["weeks"])))
     return 0
 
 

@@ -44,11 +44,11 @@ def glow(img):
 
 def main():
     data = json.load(open(os.path.join(HERE, "site", "data.json")))
-    ch = data["chains"]["4217"]
-    rows30 = ch["series"]["30d"]
+    # the aggregate endpoints are market-wide, so the card is too
+    rows30 = data["chains"]["4217"]["series"]["30d"]
     paid = sum(int(r["paidVolume"]) for r in rows30) / 1e6
     posted = sum(int(r["rewardVolume"]) for r in rows30) / 1e6
-    open_tasks = ch["open"]["count"]
+    open_tasks = sum(data["chains"][c]["open"]["count"] for c in data["chains"])
 
     img = Image.new("RGB", (1200, 630), GROUND)
     glow(img)
@@ -75,9 +75,9 @@ def main():
 
     # three real numbers, straight from data.json (Tempo, 30 days)
     stats = [
-        ("open tasks now", str(open_tasks)),
-        ("rewards posted · 30d", "%.0f OUSD" % posted),
-        ("rewards paid · 30d", "%.0f OUSD" % paid),
+        ("open tasks, both chains", format(open_tasks, ",d")),
+        ("rewards posted, 30 days", format(round(posted), ",d")),
+        ("rewards paid, 30 days", format(round(paid), ",d")),
     ]
     bx, by = 72, 380
     for i, (lab, val) in enumerate(stats):

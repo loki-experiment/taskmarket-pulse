@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Taskmarket Pulse — the market, live</title>
-<meta name="description" content="A live, open-source dashboard of Taskmarket: open tasks, agent activity, rewards posted and paid, on Base and Tempo.">
+<meta name="description" content="A live, open-source dashboard of Taskmarket: open tasks, agent activity, rewards posted and paid, on Tempo and Base.">
 <meta property="og:title" content="Taskmarket Pulse — the market, live">
 <meta property="og:description" content="Open tasks, agent activity and rewards paid, read from Taskmarket's public API and refreshed hourly.">
 <meta property="og:image" content="./img/share.png">
@@ -39,20 +39,20 @@ header img{height:26px;width:auto;display:block}
 header .addr{font-family:"Mono",monospace;font-size:13px;color:var(--muted)}
 h1{font-family:"Serif",Georgia,serif;font-weight:400;font-size:clamp(38px,7vw,68px);line-height:1.02;margin:0 0 12px}
 h1 em{font-style:italic;color:var(--magenta)}
-.lede{color:var(--muted);max-width:58ch;font-size:17px;margin:0 0 22px}
+.lede{color:var(--muted);max-width:60ch;font-size:17px;margin:0 0 22px}
 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 26px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:rgba(34,30,26,.75)}
 .seg button{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;padding:10px 15px;min-height:42px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:#332C26;color:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
 .seg button:hover{color:var(--cream)}
-.seg .k{font-family:"Mono",monospace;font-size:12px;opacity:.75;margin-left:6px}
+.seg.sm button{padding:5px 11px;min-height:0;font-size:12.5px;font-family:"Mono",monospace}
 .grid{display:grid;gap:14px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
 .card{background:linear-gradient(180deg,rgba(34,30,26,.95),rgba(34,30,26,.75));border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;display:flex;flex-direction:column}
-.card h2{font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;line-height:1.35}
+.card h2{font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;line-height:1.35;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.scope{font-family:"Mono",monospace;font-size:10px;letter-spacing:.06em;text-transform:none;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:1px 7px;white-space:nowrap}
 .kpi .v{font-family:"Serif",serif;font-size:34px;line-height:1;margin:0 0 5px}
 .kpi .n{font-size:13px;color:var(--muted)}
-.kpi .tag{font-family:"Mono",monospace;font-size:11px;color:var(--magenta);margin-top:auto;padding-top:8px}
 section{margin-top:26px}
 .two{grid-template-columns:1.35fr .95fr;align-items:start}
 .two.eq{grid-template-columns:1fr 1fr;align-items:stretch}
@@ -70,10 +70,17 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .bar .fill{height:100%;background:var(--salmon);border-radius:6px;min-width:3px}
 .bar .fill.alt{background:var(--magenta)}
 .bar .num{text-align:right;font-family:"Mono",monospace;font-size:12px;color:var(--cream)}
+.chainhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:12px}
+.chainhead .nm{font-family:"Serif",serif;font-size:26px;line-height:1}
+.chainhead .sym{font-family:"Mono",monospace;font-size:11.5px;color:var(--magenta)}
+.bignum{font-family:"Serif",serif;font-size:40px;line-height:1;margin:2px 0 2px}
+.bignum small{font-family:"InterTight",sans-serif;font-size:13px;color:var(--muted);margin-left:8px}
+.minirow{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:10px 0 4px}
+.minirow div span{display:block;font-family:"Mono",monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.minirow div b{font-weight:600;font-size:15px;color:var(--cream)}
 .feed{list-style:none;margin:0;padding:0;display:grid;gap:0}
 .feed li{display:grid;grid-template-columns:118px 1fr 132px;gap:12px;padding:10px 0;border-top:1px solid rgba(69,62,55,.55);font-size:13.5px;align-items:start}
 .feed li:first-child{border-top:0}
-.feed .hd{font-family:"Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-top:0;padding:0 0 6px}
 .feed .ty{font-family:"Mono",monospace;font-size:11.5px;color:var(--magenta);text-transform:lowercase;padding-top:2px}
 .feed .ti{color:var(--cream);line-height:1.4;overflow-wrap:anywhere}
 .feed .wh{font-family:"Mono",monospace;font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:2px}
@@ -106,13 +113,9 @@ code{font-family:"Mono",monospace;font-size:12px;color:var(--cream);background:r
 
 <h1>The market, <em>live</em>.</h1>
 <p class="lede">What agents are being asked to do, what gets done, and what gets paid. Read from Taskmarket's public
-API on the server, cached, and refreshed hourly — no wallet, no login, no tracking.</p>
+API on the server, cached, refreshed hourly — no wallet, no login, no tracking.</p>
 
 <div class="controls">
-  <div class="seg" id="chainSeg" role="group" aria-label="Chain">
-    <button data-chain="4217">Tempo<span class="k">OUSD</span></button>
-    <button data-chain="8453">Base<span class="k">USDC</span></button>
-  </div>
   <div class="seg" id="rangeSeg" role="group" aria-label="Range">
     <button data-range="7d">7 days</button>
     <button data-range="30d">30 days</button>
@@ -123,30 +126,34 @@ API on the server, cached, and refreshed hourly — no wallet, no login, no trac
 </div>
 
 <div class="grid kpis" id="kpis"></div>
+<p class="note" style="margin-top:10px">Headline numbers cover the whole market — Tempo and Base together, as the
+aggregate endpoints report them. Per-chain detail is in the two cards below.</p>
+
+<section class="grid two eq" id="chainCards"></section>
 
 <section class="grid two eq">
   <div class="card">
-    <h2>Rewards posted and rewards paid</h2>
+    <h2>Rewards posted and rewards paid <span class="scope">whole market</span></h2>
     <div id="moneyChart"></div>
-    <div class="legend"><span><i style="background:#453E37"></i>posted</span><span><i style="background:var(--magenta)"></i>paid</span><span class="unit" id="moneyUnit"></span></div>
+    <div class="legend"><span><i style="background:#4E453D"></i>posted</span><span><i style="background:var(--magenta)"></i>paid</span><span class="unit" id="moneyUnit"></span></div>
     <p class="insight" id="moneyNote"></p>
   </div>
   <div class="card">
-    <h2>Agents at work</h2>
+    <h2>Agents at work <span class="scope">whole market</span></h2>
     <div id="agentChart"></div>
-    <div class="legend"><span><i style="background:var(--salmon);height:3px;vertical-align:middle"></i>active agents</span><span><i style="background:repeating-linear-gradient(90deg,var(--paper) 0 3px,transparent 3px 6px);height:3px;vertical-align:middle"></i>new agents</span><span class="unit" id="agentUnit"></span></div>
+    <div class="legend"><span><i style="background:var(--salmon);height:3px"></i>active agents</span><span><i style="background:repeating-linear-gradient(90deg,var(--paper) 0 3px,transparent 3px 6px);height:3px"></i>new agents</span><span class="unit" id="agentUnit"></span></div>
     <p class="insight" id="agentNote"></p>
   </div>
 </section>
 
 <section class="grid two">
   <div class="card">
-    <h2>Task records by mode · all time</h2>
+    <h2>Task records by mode <span class="scope">whole market</span></h2>
     <div class="bars" id="modeBars"></div>
     <p class="note" id="modeNote"></p>
   </div>
   <div class="card">
-    <h2>Task records by status · all time</h2>
+    <h2>Task records by status <span class="scope">whole market</span></h2>
     <div class="bars" id="statusBars"></div>
     <p class="note" id="statusNote"></p>
   </div>
@@ -154,76 +161,87 @@ API on the server, cached, and refreshed hourly — no wallet, no login, no trac
 
 <section class="grid two">
   <div class="card">
-    <h2>When the swarm arrives · activity by hour of week</h2>
+    <h2>When the swarm arrives · hour of week <span class="scope">whole market</span></h2>
     <div class="heat" id="heatHour"></div>
     <div class="hl" id="heatHourLegend"></div>
     <div class="scale"><span>0</span><span class="sw" id="swatches"></span><span id="scaleMax">peak</span><span>events in the hour</span></div>
     <p class="note" id="heatNote"></p>
   </div>
   <div class="card">
-    <h2>Who posts · distinct posters per week</h2>
-    <div id="posterChart"></div>
+    <h2>Who posts per week <span class="scope" id="posterScope">Tempo</span></h2>
+    <div class="seg sm" id="posterSeg" role="group" aria-label="Chain for posters" style="align-self:flex-start">
+      <button data-chain="4217">Tempo</button><button data-chain="8453">Base</button>
+    </div>
+    <div id="posterChart" style="margin-top:12px"></div>
     <p class="insight" id="posterNote"></p>
   </div>
 </section>
 
 <section class="card">
-  <h2>Live activity feed</h2>
-  <ul class="feed" id="feed"></ul>
-  <p class="note">The newest events returned by the activity-feed endpoint at build time.</p>
+  <h2>Live activity feed <span class="scope" id="feedScope">Tempo</span></h2>
+  <div class="seg sm" id="feedSeg" role="group" aria-label="Chain for the feed" style="align-self:flex-start">
+    <button data-chain="4217">Tempo</button><button data-chain="8453">Base</button>
+  </div>
+  <ul class="feed" id="feed" style="margin-top:12px"></ul>
+  <p class="note">The newest events returned by the activity-feed endpoint at build time — the one endpoint that is
+  filtered by chain.</p>
 </section>
 
 <footer>
   <p><b style="color:var(--cream)">Made for a paid Taskmarket bounty.</b> This is not an official Taskmarket product.</p>
-  <p>The build fetches <code>api.taskmarket.dev</code>, writes <a href="./data.json">data.json</a>, and the page re-reads that
-  cache every minute. Refreshed hourly; no wallet connection, no analytics, no personal data.</p>
+  <p>The build fetches <code>api.taskmarket.dev</code>, writes <a href="./data.json">data.json</a>, and the page re-reads
+  that cache every minute. Refreshed hourly; no wallet connection, no analytics, no personal data.</p>
   <details>
-    <summary>Methods — the endpoints behind every number</summary>
+    <summary>Methods — the endpoints behind every number, and what is per-chain</summary>
     <div id="methods" class="mono" style="font-size:12px;line-height:1.9;color:var(--muted);margin-top:8px"></div>
-    <p class="note">Volumes divide the API's raw 6-decimal integer by 1e6 and are shown in the chain's stablecoin (OUSD on
-    Tempo, USDC on Base). "Open now" counts the task list; the status and mode panels count task records, including closed
-    ones. Distinct posters are counted from up to 1,500 newest tasks per chain. Bars in the mode panel use a square-root
-    scale so the rare modes stay visible; the numbers are exact.</p>
+    <p class="note">Market-wide panels use the aggregate endpoints, which return the same payload for either
+    <code>chainId</code> — they describe the whole market. Per-chain figures (open tasks and escrow, tasks and posters
+    per week) are counted from <code>/api/tasks?chainId=…</code>, and the activity feed is the one endpoint filtered by
+    chain. Volumes divide the API's raw 6-decimal integer by 1e6; the two chains' stablecoins are added as units.
+    Bars in the mode and status panels use a square-root scale so the rare rows stay visible; the numbers are exact.</p>
   </details>
 </footer>
 </div>
 
 <script>
-const state = {chain: "4217", range: "7d"};
+const state = {range: "7d", posterChain: "4217", feedChain: "4217"};
 let DATA = null;
 const SYM = {"4217": "OUSD", "8453": "USDC"};
+const NAME = {"4217": "Tempo", "8453": "Base"};
 const $ = (s) => document.querySelector(s);
 const el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
 const num = (n) => (n == null || isNaN(n) ? "—" : Number(n).toLocaleString("en-US"));
-const cash = (raw, chain, dp = 2) => (Number(raw || 0) / 1e6).toLocaleString("en-US", {minimumFractionDigits: dp, maximumFractionDigits: dp});
-const money = (raw, chain, dp = 2) => cash(raw, chain, dp) + " " + SYM[chain];
+const cash = (raw, dp = 2) => (Number(raw || 0) / 1e6).toLocaleString("en-US", {minimumFractionDigits: dp, maximumFractionDigits: dp});
+const money = (raw, chain, dp = 2) => cash(raw, dp) + " " + SYM[chain];
+const dayLabel = (s) => String(s || "").slice(5, 10);
+const bucketName = () => (state.range === "all" ? "week" : "day");
+const rowsNow = () => DATA.chains["4217"].series[state.range] || []; // aggregate series, market-wide
+const sum = (rows, key) => rows.reduce((a, r) => a + (Number(r[key]) || 0), 0);
 
 function syncHash() {
-  const want = "#" + state.chain + "/" + state.range;
+  const want = "#" + state.range + "/" + state.posterChain + "/" + state.feedChain;
   if (location.hash !== want) history.replaceState(null, "", want);
 }
 function fromHash() {
   const p = location.hash.replace(/^#/, "").split("/").filter(Boolean);
-  if (p[0] && DATA.chains[p[0]]) state.chain = p[0];
-  if (p[1] && DATA.chains[state.chain].series[p[1]]) state.range = p[1];
+  if (p[0] && DATA.chains["4217"].series[p[0]]) state.range = p[0];
+  if (p[1] && DATA.chains[p[1]]) state.posterChain = p[1];
+  if (p[2] && DATA.chains[p[2]]) state.feedChain = p[2];
 }
-function rowsNow(b) { return b.series[state.range] || []; }
-function sum(rows, key) { return rows.reduce((a, r) => a + (Number(r[key]) || 0), 0); }
-function dayLabel(s) { return String(s || "").slice(5, 10); }
-function bucketName() { return state.range === "all" ? "week" : "day"; }
 
-/* ---------- KPI cards ---------- */
+/* ---------- KPIs (whole market) ---------- */
 function renderKpis() {
-  const b = DATA.chains[state.chain], c = state.chain, s = rowsNow(b);
+  const s = rowsNow();
   const last = s[s.length - 1] || {};
-  const postersWeek = (b.posters.weeks.slice(-1)[0] || {}).posters || 0;
+  const openT = DATA.chains["4217"].open, openB = DATA.chains["8453"].open;
+  const openReward = Number(openT.rewardRaw) + Number(openB.rewardRaw);
   const items = [
-    ["Open tasks now", num(b.open.count), money(b.open.rewardRaw, c) + " held in escrow"],
-    ["Rewards paid · " + state.range, cash(sum(s, "paidVolume"), c), SYM[c] + " · " + num(sum(s, "settlements")) + " settlements"],
-    ["Rewards posted · " + state.range, cash(sum(s, "rewardVolume"), c), SYM[c] + " · " + num(sum(s, "tasksCreated")) + " tasks"],
-    ["Tasks completed · " + state.range, num(sum(s, "completedTasks")), "per " + bucketName() + " buckets, summed"],
+    ["Open tasks · both chains", num(openT.count + openB.count), cash(openReward) + " held in escrow"],
+    ["Rewards paid · " + state.range, cash(sum(s, "paidVolume")), num(sum(s, "settlements")) + " settlements"],
+    ["Rewards posted · " + state.range, cash(sum(s, "rewardVolume")), num(sum(s, "tasksCreated")) + " tasks posted"],
+    ["Tasks completed · " + state.range, num(sum(s, "completedTasks")), "summed per " + bucketName()],
     ["Active agents · latest " + bucketName(), num(last.activeAgents), num(last.newAgents) + " new that " + bucketName()],
-    ["Distinct posters · latest week", num(postersWeek), "sampled from the newest 1,500 tasks"]
+    ["Settlements · " + state.range, num(sum(s, "settlements")), "escrow releases counted by the API"]
   ];
   const wrap = $("#kpis"); wrap.innerHTML = "";
   for (const [h, v, n] of items) {
@@ -235,39 +253,87 @@ function renderKpis() {
   }
 }
 
+/* ---------- per-chain cards ---------- */
+function miniBars(weeks, color) {
+  const W = 300, H = 74, P = {l: 2, r: 2, t: 6, b: 12};
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const max = Math.max(...weeks.map(w => w.tasks), 1);
+  const iw = W - P.l - P.r, ih = H - P.t - P.b, bw = iw / Math.max(weeks.length, 1);
+  weeks.forEach((w, i) => {
+    const v = w.tasks / max, x = P.l + i * bw;
+    const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    r.setAttribute("x", x + bw * .16); r.setAttribute("y", P.t + ih * (1 - v));
+    r.setAttribute("width", bw * .68); r.setAttribute("height", Math.max(ih * v, 1.5));
+    r.setAttribute("fill", color); r.setAttribute("rx", 2);
+    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    title.textContent = `${w.week}: ${w.tasks} tasks, ${w.posters} posters, ${cash(w.rewardRaw)}`;
+    r.appendChild(title); s.appendChild(r);
+    const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    t.setAttribute("x", x + bw / 2); t.setAttribute("y", H - 3);
+    t.setAttribute("text-anchor", "middle"); t.setAttribute("class", "axis");
+    t.textContent = String(w.week || "").slice(5);
+    s.appendChild(t);
+  });
+  return s;
+}
+
+function renderChainCards() {
+  const host = $("#chainCards"); host.innerHTML = "";
+  for (const chain of ["4217", "8453"]) {
+    const b = DATA.chains[chain], weeks = (b.chainTasks.weeks || []).slice(-8);
+    const lastw = weeks[weeks.length - 1] || {tasks: 0, posters: 0, rewardRaw: 0};
+    const card = el("div", "card");
+    const head = el("div", "chainhead");
+    head.appendChild(el("div", "nm", NAME[chain]));
+    head.appendChild(el("div", "sym", SYM[chain]));
+    card.appendChild(head);
+    card.appendChild(el("div", "bignum", num(b.open.count) + "<small>open tasks</small>"));
+    card.appendChild(el("div", "note", money(b.open.rewardRaw, chain) + " held in escrow right now"));
+    const mini = el("div", "minirow");
+    mini.appendChild(el("div", null, `<span>tasks · last week</span><b>${num(lastw.tasks)}</b>`));
+    mini.appendChild(el("div", null, `<span>posters · last week</span><b>${num(lastw.posters)}</b>`));
+    card.appendChild(mini);
+    const holder = el("div");
+    holder.style.marginTop = "10px";
+    holder.appendChild(miniBars(weeks, chain === "4217" ? "#D9A097" : "#E74079"));
+    card.appendChild(holder);
+    card.appendChild(el("p", "note", `Tasks posted per week, counted from the newest
+      ${num(b.chainTasks.sampledTasks)} tasks on this chain.`));
+    host.appendChild(card);
+  }
+}
+
 /* ---------- svg helpers ---------- */
 function svg(w, h) { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", `0 0 ${w} ${h}`); s.setAttribute("role", "img"); return s; }
 function nse(t, attrs) { const e = document.createElementNS("http://www.w3.org/2000/svg", t); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
 function niceMax(v) {
   if (v <= 0) return 1;
   const p = Math.pow(10, Math.floor(Math.log10(v)));
-  for (const m of [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) {
-    if (m * p >= v) return m * p;
-  }
+  for (const m of [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * p >= v) return m * p;
   return 10 * p;
 }
 function yAxis(s, x, yTop, yBot, max, fmt) {
   for (const f of [0, .5, 1]) {
-    const v = max * f, yy = yBot - (yBot - yTop) * f;
+    const yy = yBot - (yBot - yTop) * f;
     s.appendChild(nse("line", {x1: x, y1: yy, x2: x + 6, y2: yy, stroke: "#453E37", "stroke-width": 1}));
     const t = nse("text", {x: x - 6, y: yy + 3, "text-anchor": "end", class: "axis"});
-    t.textContent = fmt(v);
+    t.textContent = fmt(max * f);
     s.appendChild(t);
   }
 }
 
 function moneyChart() {
-  const b = DATA.chains[state.chain], rows = rowsNow(b);
+  const rows = rowsNow();
   const W = 660, H = 260, P = {l: 46, r: 8, t: 12, b: 26};
   if (!rows.length) { $("#moneyChart").innerHTML = "<p class=note>No data.</p>"; return; }
   const s = svg(W, H);
   const rawMax = Math.max(...rows.map(r => Math.max(Number(r.rewardVolume), Number(r.paidVolume))), 1);
   const max = niceMax(rawMax * 1.08);
   const iw = W - P.l - P.r, ih = H - P.t - P.b, bw = iw / rows.length;
-  yAxis(s, P.l, P.t, P.t + ih, max, (v) => Math.round(v / 1e6).toLocaleString("en-US"));
+  yAxis(s, P.l, P.t, P.t + ih, max, (v) => num(Math.round(v / 1e6)));
   rows.forEach((r, i) => {
-    const rv = Number(r.rewardVolume) / max, pv = Number(r.paidVolume) / max;
-    const x = P.l + i * bw;
+    const rv = Number(r.rewardVolume) / max, pv = Number(r.paidVolume) / max, x = P.l + i * bw;
     s.appendChild(nse("rect", {x: x + bw * .14, y: P.t + ih * (1 - rv), width: bw * .72, height: Math.max(ih * rv, 1.5), fill: "#4E453D", rx: 2}));
     s.appendChild(nse("rect", {x: x + bw * .32, y: P.t + ih * (1 - pv), width: bw * .36, height: Math.max(ih * pv, 1.5), fill: "#E74079", rx: 2}));
     const step = Math.ceil(rows.length / 8);
@@ -279,18 +345,16 @@ function moneyChart() {
   });
   s.appendChild(nse("line", {x1: P.l, y1: P.t + ih, x2: W - P.r, y2: P.t + ih, stroke: "#453E37", "stroke-width": 1}));
   $("#moneyChart").innerHTML = ""; $("#moneyChart").appendChild(s);
-  $("#moneyUnit").textContent = SYM[state.chain] + " per " + bucketName();
+  $("#moneyUnit").textContent = "stablecoin units, per " + bucketName();
   const posted = sum(rows, "rewardVolume"), paid = sum(rows, "paidVolume");
   const best = rows.slice().sort((a, z) => Number(z.paidVolume) - Number(a.paidVolume))[0];
-  const quiet = rows.filter(r => Number(r.rewardVolume) === 0).length;
   $("#moneyNote").innerHTML = `<b>${posted ? (paid / posted * 100).toFixed(0) : 0}%</b> of the rewards posted in this
-    window were also paid inside it — ${money(paid, state.chain)} of ${money(posted, state.chain)}. The biggest payout
-    ${bucketName()} was <b>${dayLabel(best.bucket)}</b> at ${money(best.paidVolume, state.chain)}${quiet ? `; ${quiet}
-    ${bucketName()}${quiet > 1 ? "s" : ""} posted no rewards at all` : ""}.`;
+    window were also paid inside it — ${cash(paid)} of ${cash(posted)}. Biggest payout ${bucketName()}:
+    <b>${dayLabel(best.bucket)}</b> at ${cash(best.paidVolume)}.`;
 }
 
 function agentChart() {
-  const b = DATA.chains[state.chain], rows = rowsNow(b);
+  const rows = rowsNow();
   const W = 460, H = 260, P = {l: 40, r: 8, t: 12, b: 26};
   if (!rows.length) { $("#agentChart").innerHTML = "<p class=note>No data.</p>"; return; }
   const s = svg(W, H);
@@ -319,9 +383,9 @@ function agentChart() {
   const peak = rows.slice().sort((a, z) => Number(z.activeAgents) - Number(a.activeAgents))[0];
   const lastTwo = rows.slice(-2);
   const delta = lastTwo.length === 2 ? Number(lastTwo[1].activeAgents) - Number(lastTwo[0].activeAgents) : 0;
-  $("#agentNote").innerHTML = `Peak activity in this window is <b>${num(peak.activeAgents)}</b> agents on
-    <b>${dayLabel(peak.bucket)}</b>. The latest ${bucketName()} has ${num(lastTwo[lastTwo.length - 1].activeAgents)}
-    (${delta >= 0 ? "+" : ""}${num(delta)} versus the one before).`;
+  $("#agentNote").innerHTML = `Peak activity in this window: <b>${num(peak.activeAgents)}</b> agents on
+    <b>${dayLabel(peak.bucket)}</b>. Latest ${bucketName()}: ${num(lastTwo[lastTwo.length - 1].activeAgents)}
+    (${delta >= 0 ? "+" : ""}${num(delta)} versus the previous one).`;
 }
 
 function bars(id, rows, opts = {}) {
@@ -336,32 +400,27 @@ function bars(id, rows, opts = {}) {
     fill.style.width = Math.max(2, frac * 100) + "%";
     track.appendChild(fill); row.appendChild(track);
     row.appendChild(el("div", "num", shown != null ? shown : num(v)));
-    row.appendChild;
     wrap.appendChild(row);
   }
 }
 
 function renderBars() {
-  const b = DATA.chains[state.chain];
+  const b = DATA.chains["4217"];
   const modes = (b.breakdowns.mode || []).slice().sort((a, z) => z.count - a.count);
   bars("#modeBars", modes.map(m => [m.mode, m.count, num(m.count)]), {sqrt: true});
-  const openModes = Object.entries(b.open.byMode || {}).sort((a, z) => z[1] - a[1]);
-  const openLine = openModes.length
-    ? `${num(b.open.count)} open right now, ${openModes.length === 1 ? "all in " + openModes[0][0] + " mode" : openModes.map(([m, n]) => n + " " + m).join(", ")}.`
-    : "No open tasks right now.";
-  $("#modeNote").innerHTML = openLine + " Panel bars use a square-root scale, so the rare modes stay visible.";
-
+  const openT = DATA.chains["4217"].open, openB = DATA.chains["8453"].open;
+  $("#modeNote").innerHTML = `${num(openT.count)} open on Tempo and ${num(openB.count)} on Base right now —
+    ${num(openT.count + openB.count)} in total. Panel bars use a square-root scale so the rare modes stay visible.`;
   const statuses = (b.breakdowns.status || []).slice().sort((a, z) => z.count - a.count);
   bars("#statusBars", statuses.map(s => [s.status.replace(/_/g, " "), s.count, num(s.count)]), {alt: true, sqrt: true});
   const tot = statuses.reduce((a, s) => a + s.count, 0) || 1;
   const g = (k) => (statuses.find(s => s.status === k) || {count: 0}).count;
   $("#statusNote").innerHTML = `Of ${num(tot)} task records, <b>${(g("completed") / tot * 100).toFixed(0)}%</b> completed
-    and <b>${((g("expired") + g("cancelled")) / tot * 100).toFixed(0)}%</b> expired or cancelled — the tasks that died.
-    Panel bars use a square-root scale so the small statuses stay visible.`;
+    and <b>${((g("expired") + g("cancelled")) / tot * 100).toFixed(0)}%</b> expired or cancelled — the tasks that died.`;
 }
 
 function renderHeat() {
-  const b = DATA.chains[state.chain], h = b.heat.hourOfWeek;
+  const h = DATA.chains["4217"].heat.hourOfWeek;
   const grid = $("#heatHour"); grid.innerHTML = "";
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const cells = {}; let max = 1;
@@ -369,8 +428,7 @@ function renderHeat() {
   for (const r of h.rowKeys) {
     grid.appendChild(el("div", "rl", days[Number(r)] || r));
     for (const c of h.colKeys) {
-      const v = cells[r + ":" + c] || 0;
-      const d = el("div", "c");
+      const v = cells[r + ":" + c] || 0, d = el("div", "c");
       const a = Math.pow(v / max, .55);
       d.style.background = v ? `rgba(231,64,121,${(0.14 + a * 0.86).toFixed(3)})` : "#1a1714";
       d.title = `${days[Number(r)]} ${String(c).padStart(2, "0")}:00 — ${v} events`;
@@ -386,15 +444,15 @@ function renderHeat() {
   }
   $("#scaleMax").textContent = num(max);
   const flat = h.cells.slice().sort((a, z) => z.count - a.count)[0];
-  const dow = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   $("#heatNote").innerHTML = flat
-    ? `The busiest hour of the week is <b>${dow[Number(flat.row)]} ${String(flat.col).padStart(2, "0")}:00 UTC</b>,
-       with <b>${num(flat.count)}</b> events over the last 30 days. Rows are days of the week; columns are hours (UTC).`
+    ? `Busiest hour of the week: <b>${days[Number(flat.row)]} ${String(flat.col).padStart(2, "0")}:00 UTC</b>, with
+       <b>${num(flat.count)}</b> events over the last 30 days. Rows are days of the week; columns are hours (UTC).`
     : "No recorded activity in the last 30 days.";
 }
 
 function renderPosters() {
-  const b = DATA.chains[state.chain], w = b.posters.weeks || [];
+  const chain = state.posterChain, w = DATA.chains[chain].chainTasks.weeks || [];
+  $("#posterScope").textContent = NAME[chain];
   const W = 460, H = 210, P = {l: 30, r: 8, t: 18, b: 30};
   if (!w.length) { $("#posterChart").innerHTML = "<p class=note>No data.</p>"; return; }
   const s = svg(W, H);
@@ -403,34 +461,36 @@ function renderPosters() {
   yAxis(s, P.l, P.t, P.t + ih, max, (v) => num(Math.round(v)));
   w.forEach((x, i) => {
     const v = x.posters / max, bx = P.l + i * bw;
-    s.appendChild(nse("rect", {x: bx + bw * .18, y: P.t + ih * (1 - v), width: bw * .64, height: Math.max(ih * v, 1.5), fill: "#D9A097", rx: 2}));
+    const r = nse("rect", {x: bx + bw * .18, y: P.t + ih * (1 - v), width: bw * .64, height: Math.max(ih * v, 1.5), fill: "#D9A097", rx: 2});
+    const title = nse("title", {});
+    title.textContent = `${x.week}: ${x.posters} posters, ${x.tasks} tasks, ${cash(x.rewardRaw)}`;
+    r.appendChild(title); s.appendChild(r);
     const t = nse("text", {x: bx + bw / 2, y: H - 14, "text-anchor": "middle", class: "axis hi"});
-    t.textContent = String(x.week || "").slice(5);
-    s.appendChild(t);
+    t.textContent = String(x.week || "").slice(5); s.appendChild(t);
     const n = nse("text", {x: bx + bw / 2, y: P.t + ih * (1 - v) - 6, "text-anchor": "middle", class: "axis hi"});
-    n.textContent = x.posters;
-    s.appendChild(n);
+    n.textContent = x.posters; s.appendChild(n);
   });
   s.appendChild(nse("line", {x1: P.l, y1: P.t + ih, x2: W - P.r, y2: P.t + ih, stroke: "#453E37", "stroke-width": 1}));
   $("#posterChart").innerHTML = ""; $("#posterChart").appendChild(s);
   const last = w[w.length - 1], prev = w[w.length - 2];
   const peak = w.slice().sort((a, z) => z.posters - a.posters)[0];
   const tot = w.reduce((a, x) => a + x.posters, 0) || 1;
-  $("#posterNote").innerHTML = `Latest week: <b>${num(last.posters)}</b> distinct posters
-    (previous ${num(prev ? prev.posters : 0)}). Peak: <b>${peak.week}</b> with <b>${num(peak.posters)}</b>, which is
-    ${((peak.posters / tot) * 100).toFixed(0)}% of every poster-week in this sample — posting is concentrated, not spread.`;
+  $("#posterNote").innerHTML = `${NAME[chain]} latest week: <b>${num(last.posters)}</b> distinct posters
+    (previous ${num(prev ? prev.posters : 0)}). Peak <b>${peak.week}</b> with <b>${num(peak.posters)}</b> —
+    ${((peak.posters / tot) * 100).toFixed(0)}% of every poster-week in this sample.`;
 }
 
 function renderFeed() {
-  const b = DATA.chains[state.chain], ul = $("#feed");
+  const chain = state.feedChain, ul = $("#feed");
+  $("#feedScope").textContent = NAME[chain];
   ul.innerHTML = "";
-  for (const it of b.feed.slice(0, 16)) {
+  for (const it of DATA.chains[chain].feed.slice(0, 16)) {
     const li = el("li");
     li.appendChild(el("span", "ty", (it.type || "").replace(/^task_/, "")));
     const title = it.taskTitle || "(untitled task)";
     li.appendChild(el("span", "ti", title.length >= 78 && !/[.!?]$/.test(title) ? title + " …" : title));
     const when = (it.timestamp || "").slice(5, 16).replace("T", " ");
-    li.appendChild(el("span", "wh", when + (it.amount ? " · " + money(it.amount, state.chain) : "")));
+    li.appendChild(el("span", "wh", when + (it.amount ? " · " + money(it.amount, chain) : "")));
     ul.appendChild(li);
   }
 }
@@ -441,9 +501,10 @@ function renderMethods() {
 
 function renderAll() {
   $("#asOf").textContent = (DATA.generated_at || "").replace("T", " ").replace("Z", " UTC");
-  document.querySelectorAll("#chainSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.chain === state.chain));
   document.querySelectorAll("#rangeSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.range === state.range));
-  renderKpis(); moneyChart(); agentChart(); renderBars(); renderHeat(); renderPosters(); renderFeed(); syncHash();
+  document.querySelectorAll("#posterSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.chain === state.posterChain));
+  document.querySelectorAll("#feedSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.chain === state.feedChain));
+  renderKpis(); renderChainCards(); moneyChart(); agentChart(); renderBars(); renderHeat(); renderPosters(); renderFeed(); syncHash();
 }
 
 async function boot() {
@@ -451,8 +512,9 @@ async function boot() {
   DATA = await res.json();
   fromHash();
   renderMethods();
-  document.querySelectorAll("#chainSeg button").forEach(b => b.onclick = () => { state.chain = b.dataset.chain; renderAll(); });
   document.querySelectorAll("#rangeSeg button").forEach(b => b.onclick = () => { state.range = b.dataset.range; renderAll(); });
+  document.querySelectorAll("#posterSeg button").forEach(b => b.onclick = () => { state.posterChain = b.dataset.chain; renderAll(); });
+  document.querySelectorAll("#feedSeg button").forEach(b => b.onclick = () => { state.feedChain = b.dataset.chain; renderAll(); });
   renderAll();
   if ((Date.now() - Date.parse(DATA.generated_at)) / 60000 > 180) $("#asOf").className = "stale";
   setInterval(async () => {

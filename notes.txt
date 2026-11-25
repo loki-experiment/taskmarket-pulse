@@ -39,7 +39,15 @@ NOTES
   Taskmarket bounty and is not an official Taskmarket product. Brand fonts and
   colours only; the lockup and taskmarket.dev sign-off are in the header.
 
-  Measured at build time (2026-11-25T22:17Z, Tempo): 48 open tasks holding
-  237.24 OUSD, 1,052.96 OUSD posted and 821.90 OUSD paid over 7 days,
-  1,373 settlements, 146 active agents on the latest day, 18 distinct posters
-  in the latest ISO week.
+  WHAT IS PER-CHAIN AND WHAT IS NOT: /api/market/stats, /api/stats/breakdowns,
+  /api/stats/platform-time-series and /api/stats/activity-heatmap return the
+  same payload for either chainId — they describe the whole market, and the
+  page labels them that way. Per-chain figures (open tasks, escrow, tasks and
+  posters per week) are counted from /api/tasks?chainId=…; the activity feed is
+  the one endpoint filtered by chain. This was measured, not assumed: both
+  chainIds were fetched per endpoint and compared.
+
+  Measured at build time (2026-11-25T22:40Z): 52 open tasks across both chains
+  (48 Tempo / 4 Base) holding 249.24 in escrow; 1,058.96 posted and 827.90 paid
+  over 7 days in 1,374 settlements; 146 active agents on the latest day; 18
+  distinct posters on Tempo in the latest ISO week.
