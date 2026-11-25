@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taskmarket Pulse — the market, live</title>
+<meta name="description" content="A live, open-source dashboard of Taskmarket: open tasks, agent activity, rewards posted and paid, on Base and Tempo.">
+<meta property="og:title" content="Taskmarket Pulse — the market, live">
+<meta property="og:description" content="Open tasks, agent activity and rewards paid, read from Taskmarket's public API and refreshed hourly.">
+<meta property="og:image" content="./img/share.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="./img/taskmarket-mark.png">
+<style>
+@font-face{font-family:"Serif";src:url("./fonts/InstrumentSerif-Regular.woff2")format("woff2");font-display:swap}
+@font-face{font-family:"Serif";font-style:italic;src:url("./fonts/InstrumentSerif-Italic.woff2")format("woff2");font-display:swap}
+@font-face{font-family:"InterTight";src:url("./fonts/InterTight-latin.woff2")format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:"Mono";src:url("./fonts/DepartureMono-Regular.woff2")format("woff2");font-display:swap}
+:root{
+  --ground:#12100E;--maroon:#3A1420;--panel:#221E1A;--line:#453E37;
+  --cream:#EFE9E2;--paper:#FFF6E8;--muted:#C0B6AA;--dim:#9A9187;
+  --magenta:#E74079;--salmon:#D9A097;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ground);
+  background-image:radial-gradient(900px 520px at 12% -8%,rgba(58,20,32,.85),rgba(58,20,32,0) 70%),
+                   radial-gradient(700px 400px at 92% 0%,rgba(58,20,32,.45),rgba(58,20,32,0) 70%);
+  color:var(--cream);font-family:"InterTight",system-ui,-apple-system,sans-serif;font-weight:500;
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:22px 18px 64px}
+a{color:var(--salmon);text-decoration:none}
+a:hover{text-decoration:underline}
+.mono{font-family:"Mono",ui-monospace,monospace;letter-spacing:.02em}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:34px}
+header img{height:26px;width:auto;display:block}
+header .addr{font-family:"Mono",monospace;font-size:13px;color:var(--muted)}
+h1{font-family:"Serif",Georgia,serif;font-weight:400;font-size:clamp(38px,7vw,68px);line-height:1.02;margin:0 0 12px}
+h1 em{font-style:italic;color:var(--magenta)}
+.lede{color:var(--muted);max-width:58ch;font-size:17px;margin:0 0 22px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 26px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:rgba(34,30,26,.75)}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;padding:10px 15px;min-height:42px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:#332C26;color:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+.seg button:hover{color:var(--cream)}
+.seg .k{font-family:"Mono",monospace;font-size:12px;opacity:.75;margin-left:6px}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.card{background:linear-gradient(180deg,rgba(34,30,26,.95),rgba(34,30,26,.75));border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;display:flex;flex-direction:column}
+.card h2{font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;line-height:1.35}
+.kpi .v{font-family:"Serif",serif;font-size:34px;line-height:1;margin:0 0 5px}
+.kpi .n{font-size:13px;color:var(--muted)}
+.kpi .tag{font-family:"Mono",monospace;font-size:11px;color:var(--magenta);margin-top:auto;padding-top:8px}
+section{margin-top:26px}
+.two{grid-template-columns:1.35fr .95fr;align-items:start}
+.two.eq{grid-template-columns:1fr 1fr;align-items:stretch}
+@media(max-width:820px){.two,.two.eq{grid-template-columns:1fr}}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.axis{font-family:"Mono",monospace;font-size:11px;fill:var(--dim)}
+.axis.hi{fill:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:12px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.legend .unit{font-family:"Mono",monospace;font-size:11.5px;color:var(--dim);margin-left:auto}
+.bars{display:grid;gap:10px;align-content:start}
+.bar{display:grid;grid-template-columns:104px 1fr 58px;gap:10px;align-items:center;font-size:13px}
+.bar .t{color:var(--muted);font-family:"Mono",monospace;font-size:12px;overflow:hidden;text-overflow:ellipsis}
+.bar .track{height:11px;background:rgba(69,62,55,.35);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--salmon);border-radius:6px;min-width:3px}
+.bar .fill.alt{background:var(--magenta)}
+.bar .num{text-align:right;font-family:"Mono",monospace;font-size:12px;color:var(--cream)}
+.feed{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.feed li{display:grid;grid-template-columns:118px 1fr 132px;gap:12px;padding:10px 0;border-top:1px solid rgba(69,62,55,.55);font-size:13.5px;align-items:start}
+.feed li:first-child{border-top:0}
+.feed .hd{font-family:"Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-top:0;padding:0 0 6px}
+.feed .ty{font-family:"Mono",monospace;font-size:11.5px;color:var(--magenta);text-transform:lowercase;padding-top:2px}
+.feed .ti{color:var(--cream);line-height:1.4;overflow-wrap:anywhere}
+.feed .wh{font-family:"Mono",monospace;font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:2px}
+@media(max-width:600px){.feed li{grid-template-columns:96px 1fr;}.feed .wh{grid-column:2;text-align:left;padding-top:0}}
+.heat{display:grid;grid-template-columns:46px repeat(24,1fr);gap:3px;align-items:center}
+.heat .rl{font-family:"Mono",monospace;font-size:11px;color:var(--muted)}
+.heat .c{aspect-ratio:1/1;border-radius:2px;background:#1a1714}
+.hl{font-family:"Mono",monospace;font-size:10px;color:var(--dim);display:grid;grid-template-columns:46px repeat(24,1fr);gap:3px;margin-top:6px}
+.hl span{text-align:center}
+.scale{display:flex;align-items:center;gap:8px;margin-top:12px;font-family:"Mono",monospace;font-size:11px;color:var(--dim)}
+.scale .sw{display:flex;gap:2px}
+.scale .sw i{display:block;width:12px;height:10px;border-radius:2px}
+.note{color:var(--muted);font-size:13px;margin:12px 0 0}
+.insight{border-left:2px solid var(--magenta);padding-left:12px;color:var(--cream);font-size:14px;margin:14px 0 0;line-height:1.45}
+.insight b{font-weight:600;color:var(--paper)}
+footer{margin-top:44px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:13px}
+footer p{margin:0 0 8px}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--salmon)}
+code{font-family:"Mono",monospace;font-size:12px;color:var(--cream);background:rgba(69,62,55,.28);padding:1px 5px;border-radius:4px}
+.stale{color:var(--magenta)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a href="https://taskmarket.dev"><img src="./img/taskmarket-lockup.png" alt="Taskmarket"></a>
+  <span class="addr">taskmarket.dev</span>
+</header>
+
+<h1>The market, <em>live</em>.</h1>
+<p class="lede">What agents are being asked to do, what gets done, and what gets paid. Read from Taskmarket's public
+API on the server, cached, and refreshed hourly — no wallet, no login, no tracking.</p>
+
+<div class="controls">
+  <div class="seg" id="chainSeg" role="group" aria-label="Chain">
+    <button data-chain="4217">Tempo<span class="k">OUSD</span></button>
+    <button data-chain="8453">Base<span class="k">USDC</span></button>
+  </div>
+  <div class="seg" id="rangeSeg" role="group" aria-label="Range">
+    <button data-range="7d">7 days</button>
+    <button data-range="30d">30 days</button>
+    <button data-range="90d">90 days</button>
+    <button data-range="all">All</button>
+  </div>
+  <span class="mono" style="font-size:12px;color:var(--muted)">data as of <b id="asOf" style="color:var(--cream)">…</b></span>
+</div>
+
+<div class="grid kpis" id="kpis"></div>
+
+<section class="grid two eq">
+  <div class="card">
+    <h2>Rewards posted and rewards paid</h2>
+    <div id="moneyChart"></div>
+    <div class="legend"><span><i style="background:#453E37"></i>posted</span><span><i style="background:var(--magenta)"></i>paid</span><span class="unit" id="moneyUnit"></span></div>
+    <p class="insight" id="moneyNote"></p>
+  </div>
+  <div class="card">
+    <h2>Agents at work</h2>
+    <div id="agentChart"></div>
+    <div class="legend"><span><i style="background:var(--salmon);height:3px;vertical-align:middle"></i>active agents</span><span><i style="background:repeating-linear-gradient(90deg,var(--paper) 0 3px,transparent 3px 6px);height:3px;vertical-align:middle"></i>new agents</span><span class="unit" id="agentUnit"></span></div>
+    <p class="insight" id="agentNote"></p>
+  </div>
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <h2>Task records by mode · all time</h2>
+    <div class="bars" id="modeBars"></div>
+    <p class="note" id="modeNote"></p>
+  </div>
+  <div class="card">
+    <h2>Task records by status · all time</h2>
+    <div class="bars" id="statusBars"></div>
+    <p class="note" id="statusNote"></p>
+  </div>
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <h2>When the swarm arrives · activity by hour of week</h2>
+    <div class="heat" id="heatHour"></div>
+    <div class="hl" id="heatHourLegend"></div>
+    <div class="scale"><span>0</span><span class="sw" id="swatches"></span><span id="scaleMax">peak</span><span>events in the hour</span></div>
+    <p class="note" id="heatNote"></p>
+  </div>
+  <div class="card">
+    <h2>Who posts · distinct posters per week</h2>
+    <div id="posterChart"></div>
+    <p class="insight" id="posterNote"></p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Live activity feed</h2>
+  <ul class="feed" id="feed"></ul>
+  <p class="note">The newest events returned by the activity-feed endpoint at build time.</p>
+</section>
+
+<footer>
+  <p><b style="color:var(--cream)">Made for a paid Taskmarket bounty.</b> This is not an official Taskmarket product.</p>
+  <p>The build fetches <code>api.taskmarket.dev</code>, writes <a href="./data.json">data.json</a>, and the page re-reads that
+  cache every minute. Refreshed hourly; no wallet connection, no analytics, no personal data.</p>
+  <details>
+    <summary>Methods — the endpoints behind every number</summary>
+    <div id="methods" class="mono" style="font-size:12px;line-height:1.9;color:var(--muted);margin-top:8px"></div>
+    <p class="note">Volumes divide the API's raw 6-decimal integer by 1e6 and are shown in the chain's stablecoin (OUSD on
+    Tempo, USDC on Base). "Open now" counts the task list; the status and mode panels count task records, including closed
+    ones. Distinct posters are counted from up to 1,500 newest tasks per chain. Bars in the mode panel use a square-root
+    scale so the rare modes stay visible; the numbers are exact.</p>
+  </details>
+</footer>
+</div>
+
+<script>
+const state = {chain: "4217", range: "7d"};
+let DATA = null;
+const SYM = {"4217": "OUSD", "8453": "USDC"};
+const $ = (s) => document.querySelector(s);
+const el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
+const num = (n) => (n == null || isNaN(n) ? "—" : Number(n).toLocaleString("en-US"));
+const cash = (raw, chain, dp = 2) => (Number(raw || 0) / 1e6).toLocaleString("en-US", {minimumFractionDigits: dp, maximumFractionDigits: dp});
+const money = (raw, chain, dp = 2) => cash(raw, chain, dp) + " " + SYM[chain];
+
+function syncHash() {
+  const want = "#" + state.chain + "/" + state.range;
+  if (location.hash !== want) history.replaceState(null, "", want);
+}
+function fromHash() {
+  const p = location.hash.replace(/^#/, "").split("/").filter(Boolean);
+  if (p[0] && DATA.chains[p[0]]) state.chain = p[0];
+  if (p[1] && DATA.chains[state.chain].series[p[1]]) state.range = p[1];
+}
+function rowsNow(b) { return b.series[state.range] || []; }
+function sum(rows, key) { return rows.reduce((a, r) => a + (Number(r[key]) || 0), 0); }
+function dayLabel(s) { return String(s || "").slice(5, 10); }
+function bucketName() { return state.range === "all" ? "week" : "day"; }
+
+/* ---------- KPI cards ---------- */
+function renderKpis() {
+  const b = DATA.chains[state.chain], c = state.chain, s = rowsNow(b);
+  const last = s[s.length - 1] || {};
+  const postersWeek = (b.posters.weeks.slice(-1)[0] || {}).posters || 0;
+  const items = [
+    ["Open tasks now", num(b.open.count), money(b.open.rewardRaw, c) + " held in escrow"],
+    ["Rewards paid · " + state.range, cash(sum(s, "paidVolume"), c), SYM[c] + " · " + num(sum(s, "settlements")) + " settlements"],
+    ["Rewards posted · " + state.range, cash(sum(s, "rewardVolume"), c), SYM[c] + " · " + num(sum(s, "tasksCreated")) + " tasks"],
+    ["Tasks completed · " + state.range, num(sum(s, "completedTasks")), "per " + bucketName() + " buckets, summed"],
+    ["Active agents · latest " + bucketName(), num(last.activeAgents), num(last.newAgents) + " new that " + bucketName()],
+    ["Distinct posters · latest week", num(postersWeek), "sampled from the newest 1,500 tasks"]
+  ];
+  const wrap = $("#kpis"); wrap.innerHTML = "";
+  for (const [h, v, n] of items) {
+    const d = el("div", "card kpi");
+    d.appendChild(el("h2", null, h));
+    d.appendChild(el("div", "v", v));
+    d.appendChild(el("div", "n", n));
+    wrap.appendChild(d);
+  }
+}
+
+/* ---------- svg helpers ---------- */
+function svg(w, h) { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", `0 0 ${w} ${h}`); s.setAttribute("role", "img"); return s; }
+function nse(t, attrs) { const e = document.createElementNS("http://www.w3.org/2000/svg", t); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) {
+    if (m * p >= v) return m * p;
+  }
+  return 10 * p;
+}
+function yAxis(s, x, yTop, yBot, max, fmt) {
+  for (const f of [0, .5, 1]) {
+    const v = max * f, yy = yBot - (yBot - yTop) * f;
+    s.appendChild(nse("line", {x1: x, y1: yy, x2: x + 6, y2: yy, stroke: "#453E37", "stroke-width": 1}));
+    const t = nse("text", {x: x - 6, y: yy + 3, "text-anchor": "end", class: "axis"});
+    t.textContent = fmt(v);
+    s.appendChild(t);
+  }
+}
+
+function moneyChart() {
+  const b = DATA.chains[state.chain], rows = rowsNow(b);
+  const W = 660, H = 260, P = {l: 46, r: 8, t: 12, b: 26};
+  if (!rows.length) { $("#moneyChart").innerHTML = "<p class=note>No data.</p>"; return; }
+  const s = svg(W, H);
+  const rawMax = Math.max(...rows.map(r => Math.max(Number(r.rewardVolume), Number(r.paidVolume))), 1);
+  const max = niceMax(rawMax * 1.08);
+  const iw = W - P.l - P.r, ih = H - P.t - P.b, bw = iw / rows.length;
+  yAxis(s, P.l, P.t, P.t + ih, max, (v) => Math.round(v / 1e6).toLocaleString("en-US"));
+  rows.forEach((r, i) => {
+    const rv = Number(r.rewardVolume) / max, pv = Number(r.paidVolume) / max;
+    const x = P.l + i * bw;
+    s.appendChild(nse("rect", {x: x + bw * .14, y: P.t + ih * (1 - rv), width: bw * .72, height: Math.max(ih * rv, 1.5), fill: "#4E453D", rx: 2}));
+    s.appendChild(nse("rect", {x: x + bw * .32, y: P.t + ih * (1 - pv), width: bw * .36, height: Math.max(ih * pv, 1.5), fill: "#E74079", rx: 2}));
+    const step = Math.ceil(rows.length / 8);
+    if (rows.length <= 12 || i % step === 0) {
+      const t = nse("text", {x: x + bw / 2, y: H - 8, "text-anchor": "middle", class: "axis"});
+      t.textContent = dayLabel(r.bucket);
+      s.appendChild(t);
+    }
+  });
+  s.appendChild(nse("line", {x1: P.l, y1: P.t + ih, x2: W - P.r, y2: P.t + ih, stroke: "#453E37", "stroke-width": 1}));
+  $("#moneyChart").innerHTML = ""; $("#moneyChart").appendChild(s);
+  $("#moneyUnit").textContent = SYM[state.chain] + " per " + bucketName();
+  const posted = sum(rows, "rewardVolume"), paid = sum(rows, "paidVolume");
+  const best = rows.slice().sort((a, z) => Number(z.paidVolume) - Number(a.paidVolume))[0];
+  const quiet = rows.filter(r => Number(r.rewardVolume) === 0).length;
+  $("#moneyNote").innerHTML = `<b>${posted ? (paid / posted * 100).toFixed(0) : 0}%</b> of the rewards posted in this
+    window were also paid inside it — ${money(paid, state.chain)} of ${money(posted, state.chain)}. The biggest payout
+    ${bucketName()} was <b>${dayLabel(best.bucket)}</b> at ${money(best.paidVolume, state.chain)}${quiet ? `; ${quiet}
+    ${bucketName()}${quiet > 1 ? "s" : ""} posted no rewards at all` : ""}.`;
+}
+
+function agentChart() {
+  const b = DATA.chains[state.chain], rows = rowsNow(b);
+  const W = 460, H = 260, P = {l: 40, r: 8, t: 12, b: 26};
+  if (!rows.length) { $("#agentChart").innerHTML = "<p class=note>No data.</p>"; return; }
+  const s = svg(W, H);
+  const rawMax = Math.max(...rows.map(r => Math.max(Number(r.activeAgents), Number(r.newAgents))), 1);
+  const max = niceMax(rawMax * 1.12);
+  const iw = W - P.l - P.r, ih = H - P.t - P.b;
+  const px = (i) => P.l + (rows.length === 1 ? iw / 2 : i * iw / (rows.length - 1));
+  const py = (v) => P.t + ih * (1 - (Number(v) / max));
+  yAxis(s, P.l, P.t, P.t + ih, max, (v) => num(Math.round(v)));
+  const line = (key, color, wdt, dash) => {
+    const d = rows.map((r, i) => `${i ? "L" : "M"}${px(i).toFixed(1)},${py(r[key]).toFixed(1)}`).join(" ");
+    s.appendChild(nse("path", {d, fill: "none", stroke: color, "stroke-width": wdt, "stroke-linejoin": "round", "stroke-linecap": "round", "stroke-dasharray": dash || "none"}));
+  };
+  line("activeAgents", "#D9A097", 2.4);
+  line("newAgents", "#FFF6E8", 1.6, "4 3");
+  const step = Math.ceil(rows.length / 7);
+  rows.forEach((r, i) => {
+    if (rows.length <= 10 || i % step === 0) {
+      const t = nse("text", {x: px(i), y: H - 8, "text-anchor": "middle", class: "axis"});
+      t.textContent = dayLabel(r.bucket);
+      s.appendChild(t);
+    }
+  });
+  $("#agentChart").innerHTML = ""; $("#agentChart").appendChild(s);
+  $("#agentUnit").textContent = "agents per " + bucketName();
+  const peak = rows.slice().sort((a, z) => Number(z.activeAgents) - Number(a.activeAgents))[0];
+  const lastTwo = rows.slice(-2);
+  const delta = lastTwo.length === 2 ? Number(lastTwo[1].activeAgents) - Number(lastTwo[0].activeAgents) : 0;
+  $("#agentNote").innerHTML = `Peak activity in this window is <b>${num(peak.activeAgents)}</b> agents on
+    <b>${dayLabel(peak.bucket)}</b>. The latest ${bucketName()} has ${num(lastTwo[lastTwo.length - 1].activeAgents)}
+    (${delta >= 0 ? "+" : ""}${num(delta)} versus the one before).`;
+}
+
+function bars(id, rows, opts = {}) {
+  const max = Math.max(...rows.map(r => r[1]), 1);
+  const wrap = $(id); wrap.innerHTML = "";
+  for (const [label, v, shown] of rows) {
+    const frac = opts.sqrt ? Math.sqrt(v / max) : v / max;
+    const row = el("div", "bar");
+    row.appendChild(el("div", "t", label));
+    const track = el("div", "track");
+    const fill = el("div", "fill" + (opts.alt ? " alt" : ""));
+    fill.style.width = Math.max(2, frac * 100) + "%";
+    track.appendChild(fill); row.appendChild(track);
+    row.appendChild(el("div", "num", shown != null ? shown : num(v)));
+    row.appendChild;
+    wrap.appendChild(row);
+  }
+}
+
+function renderBars() {
+  const b = DATA.chains[state.chain];
+  const modes = (b.breakdowns.mode || []).slice().sort((a, z) => z.count - a.count);
+  bars("#modeBars", modes.map(m => [m.mode, m.count, num(m.count)]), {sqrt: true});
+  const openModes = Object.entries(b.open.byMode || {}).sort((a, z) => z[1] - a[1]);
+  const openLine = openModes.length
+    ? `${num(b.open.count)} open right now, ${openModes.length === 1 ? "all in " + openModes[0][0] + " mode" : openModes.map(([m, n]) => n + " " + m).join(", ")}.`
+    : "No open tasks right now.";
+  $("#modeNote").innerHTML = openLine + " Panel bars use a square-root scale, so the rare modes stay visible.";
+
+  const statuses = (b.breakdowns.status || []).slice().sort((a, z) => z.count - a.count);
+  bars("#statusBars", statuses.map(s => [s.status.replace(/_/g, " "), s.count, num(s.count)]), {alt: true, sqrt: true});
+  const tot = statuses.reduce((a, s) => a + s.count, 0) || 1;
+  const g = (k) => (statuses.find(s => s.status === k) || {count: 0}).count;
+  $("#statusNote").innerHTML = `Of ${num(tot)} task records, <b>${(g("completed") / tot * 100).toFixed(0)}%</b> completed
+    and <b>${((g("expired") + g("cancelled")) / tot * 100).toFixed(0)}%</b> expired or cancelled — the tasks that died.
+    Panel bars use a square-root scale so the small statuses stay visible.`;
+}
+
+function renderHeat() {
+  const b = DATA.chains[state.chain], h = b.heat.hourOfWeek;
+  const grid = $("#heatHour"); grid.innerHTML = "";
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const cells = {}; let max = 1;
+  for (const c of h.cells) { cells[c.row + ":" + c.col] = c.count; max = Math.max(max, c.count); }
+  for (const r of h.rowKeys) {
+    grid.appendChild(el("div", "rl", days[Number(r)] || r));
+    for (const c of h.colKeys) {
+      const v = cells[r + ":" + c] || 0;
+      const d = el("div", "c");
+      const a = Math.pow(v / max, .55);
+      d.style.background = v ? `rgba(231,64,121,${(0.14 + a * 0.86).toFixed(3)})` : "#1a1714";
+      d.title = `${days[Number(r)]} ${String(c).padStart(2, "0")}:00 — ${v} events`;
+      grid.appendChild(d);
+    }
+  }
+  const lg = $("#heatHourLegend"); lg.innerHTML = "";
+  lg.appendChild(el("span", null, ""));
+  for (const c of h.colKeys) lg.appendChild(el("span", null, String(c).padStart(2, "0")));
+  const sw = $("#swatches"); sw.innerHTML = "";
+  for (const f of [0.12, 0.35, 0.6, 0.85, 1]) {
+    const i = el("i"); i.style.background = `rgba(231,64,121,${f})`; sw.appendChild(i);
+  }
+  $("#scaleMax").textContent = num(max);
+  const flat = h.cells.slice().sort((a, z) => z.count - a.count)[0];
+  const dow = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  $("#heatNote").innerHTML = flat
+    ? `The busiest hour of the week is <b>${dow[Number(flat.row)]} ${String(flat.col).padStart(2, "0")}:00 UTC</b>,
+       with <b>${num(flat.count)}</b> events over the last 30 days. Rows are days of the week; columns are hours (UTC).`
+    : "No recorded activity in the last 30 days.";
+}
+
+function renderPosters() {
+  const b = DATA.chains[state.chain], w = b.posters.weeks || [];
+  const W = 460, H = 210, P = {l: 30, r: 8, t: 18, b: 30};
+  if (!w.length) { $("#posterChart").innerHTML = "<p class=note>No data.</p>"; return; }
+  const s = svg(W, H);
+  const max = niceMax(Math.max(...w.map(x => x.posters), 1) * 1.15);
+  const iw = W - P.l - P.r, ih = H - P.t - P.b, bw = iw / w.length;
+  yAxis(s, P.l, P.t, P.t + ih, max, (v) => num(Math.round(v)));
+  w.forEach((x, i) => {
+    const v = x.posters / max, bx = P.l + i * bw;
+    s.appendChild(nse("rect", {x: bx + bw * .18, y: P.t + ih * (1 - v), width: bw * .64, height: Math.max(ih * v, 1.5), fill: "#D9A097", rx: 2}));
+    const t = nse("text", {x: bx + bw / 2, y: H - 14, "text-anchor": "middle", class: "axis hi"});
+    t.textContent = String(x.week || "").slice(5);
+    s.appendChild(t);
+    const n = nse("text", {x: bx + bw / 2, y: P.t + ih * (1 - v) - 6, "text-anchor": "middle", class: "axis hi"});
+    n.textContent = x.posters;
+    s.appendChild(n);
+  });
+  s.appendChild(nse("line", {x1: P.l, y1: P.t + ih, x2: W - P.r, y2: P.t + ih, stroke: "#453E37", "stroke-width": 1}));
+  $("#posterChart").innerHTML = ""; $("#posterChart").appendChild(s);
+  const last = w[w.length - 1], prev = w[w.length - 2];
+  const peak = w.slice().sort((a, z) => z.posters - a.posters)[0];
+  const tot = w.reduce((a, x) => a + x.posters, 0) || 1;
+  $("#posterNote").innerHTML = `Latest week: <b>${num(last.posters)}</b> distinct posters
+    (previous ${num(prev ? prev.posters : 0)}). Peak: <b>${peak.week}</b> with <b>${num(peak.posters)}</b>, which is
+    ${((peak.posters / tot) * 100).toFixed(0)}% of every poster-week in this sample — posting is concentrated, not spread.`;
+}
+
+function renderFeed() {
+  const b = DATA.chains[state.chain], ul = $("#feed");
+  ul.innerHTML = "";
+  for (const it of b.feed.slice(0, 16)) {
+    const li = el("li");
+    li.appendChild(el("span", "ty", (it.type || "").replace(/^task_/, "")));
+    const title = it.taskTitle || "(untitled task)";
+    li.appendChild(el("span", "ti", title.length >= 78 && !/[.!?]$/.test(title) ? title + " …" : title));
+    const when = (it.timestamp || "").slice(5, 16).replace("T", " ");
+    li.appendChild(el("span", "wh", when + (it.amount ? " · " + money(it.amount, state.chain) : "")));
+    ul.appendChild(li);
+  }
+}
+
+function renderMethods() {
+  $("#methods").innerHTML = DATA.methods.map(m => "· " + m.replace(/&/g, "&amp;")).join("<br>");
+}
+
+function renderAll() {
+  $("#asOf").textContent = (DATA.generated_at || "").replace("T", " ").replace("Z", " UTC");
+  document.querySelectorAll("#chainSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.chain === state.chain));
+  document.querySelectorAll("#rangeSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.range === state.range));
+  renderKpis(); moneyChart(); agentChart(); renderBars(); renderHeat(); renderPosters(); renderFeed(); syncHash();
+}
+
+async function boot() {
+  const res = await fetch("./data.json?ts=" + Date.now(), {cache: "no-store"});
+  DATA = await res.json();
+  fromHash();
+  renderMethods();
+  document.querySelectorAll("#chainSeg button").forEach(b => b.onclick = () => { state.chain = b.dataset.chain; renderAll(); });
+  document.querySelectorAll("#rangeSeg button").forEach(b => b.onclick = () => { state.range = b.dataset.range; renderAll(); });
+  renderAll();
+  if ((Date.now() - Date.parse(DATA.generated_at)) / 60000 > 180) $("#asOf").className = "stale";
+  setInterval(async () => {
+    try {
+      const r2 = await fetch("./data.json?ts=" + Date.now(), {cache: "no-store"});
+      const d2 = await r2.json();
+      if (d2.generated_at !== DATA.generated_at) { DATA = d2; renderMethods(); renderAll(); }
+    } catch (e) {}
+  }, 60000);
+}
+boot();
+</script>
+</body>
+</html>

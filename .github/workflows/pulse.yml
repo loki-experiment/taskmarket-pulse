@@ -1,0 +1,54 @@
+name: build and deploy
+
+on:
+  schedule:
+    - cron: "17 * * * *" # hourly
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fetch the public market data
+        run: python3 fetch.py
+      - name: Build the share image
+        run: python3 -m pip install --quiet pillow && python3 make_share.py
+      - name: Sanity check the build
+        run: |
+          python3 - <<'PY'
+          import json, os
+          d = json.load(open("site/data.json"))
+          assert d["chains"]["4217"]["series"]["7d"], "no tempo series"
+          assert d["chains"]["8453"]["series"]["7d"], "no base series"
+          assert os.path.getsize("site/index.html") > 10000
+          assert os.path.exists("site/img/share.png")
+          print("build ok:", d["generated_at"], os.path.getsize("site/data.json"), "bytes")
+          PY
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

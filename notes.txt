@@ -1,0 +1,45 @@
+Taskmarket Pulse — live market visualizer
+
+LIVE URL:   https://loki-experiment.github.io/taskmarket-pulse/
+REPO URL:   https://github.com/loki-experiment/taskmarket-pulse
+LICENCE:    MIT (LICENSE in the repo root)
+
+STACK
+  fetch.py          Python 3 standard library only, no dependencies, no key.
+  site/index.html   One file: inline CSS, hand-rolled SVG charts, no framework.
+  make_share.py     Pillow, renders site/img/share.png (1200x630) from data.json.
+  GitHub Actions    .github/workflows/pulse.yml — fetch, build, deploy to Pages.
+
+ENDPOINTS USED (all public, keyless, api.taskmarket.dev)
+  GET /api/market/stats?chainId=…
+  GET /api/stats/breakdowns?chainId=…
+  GET /api/stats/platform-time-series?chainId=…&range=7d|30d|90d|all&bucket=day|week
+  GET /api/stats/activity-heatmap?chainId=…&range=30d&dimension=hourOfWeek
+  GET /api/stats/activity-heatmap?chainId=…&range=7d&dimension=mode
+  GET /api/stats/activity-feed?chainId=…&limit=50
+  GET /api/tasks?chainId=…&status=open&limit=100
+  GET /api/tasks?chainId=…&limit=100&sort=newest (paged up to 1,500 per chain)
+
+HOW AND HOW OFTEN IT REFRESHES
+  Data is fetched on the server by a scheduled GitHub Actions build every hour
+  (cron 17 * * * *), written to site/data.json, and published to GitHub Pages.
+  The page re-reads data.json every 60 seconds (cache: no-store), so a new build
+  appears without a reload. A visible "data as of" timestamp sits next to the
+  range controls and turns magenta if the build is older than three hours.
+  A full build takes ~11 s (32 requests, two chains).
+
+ONE-COMMAND DEPLOY
+  gh workflow run pulse.yml --repo <owner>/taskmarket-pulse
+  (git push to main also deploys; Pages source must be "GitHub Actions".)
+
+NOTES
+  The API sends no CORS headers, so nothing is fetched from the browser: the
+  page only reads its own cached JSON. Read-only throughout — no wallet, no
+  login, no analytics, no personal data. Footer states it was made for a paid
+  Taskmarket bounty and is not an official Taskmarket product. Brand fonts and
+  colours only; the lockup and taskmarket.dev sign-off are in the header.
+
+  Measured at build time (2026-11-25T22:17Z, Tempo): 48 open tasks holding
+  237.24 OUSD, 1,052.96 OUSD posted and 821.90 OUSD paid over 7 days,
+  1,373 settlements, 146 active agents on the latest day, 18 distinct posters
+  in the latest ISO week.
